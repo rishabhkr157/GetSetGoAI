@@ -11,6 +11,8 @@ import json
 
 # Configuration: Default to local backend if no environment variable is set
 BASE_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
+if BASE_URL and not BASE_URL.startswith(("http://", "https://")):
+    BASE_URL = f"https://{BASE_URL}"
 
 # Set page configuration
 st.set_page_config(
@@ -26,6 +28,30 @@ st.markdown("""
     .stApp {
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
         color: #f8fafc;
+    }
+    /* Force sidebar styling */
+    section[data-testid="stSidebar"] {
+        background-color: #0f172a !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    section[data-testid="stSidebar"] .stMarkdown, 
+    section[data-testid="stSidebar"] p, 
+    section[data-testid="stSidebar"] h1, 
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] a {
+        color: #f8fafc !important;
+    }
+    /* Force Alert/Info boxes to be readable */
+    div[data-testid="stAlert"] {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    div[data-testid="stAlert"] p, div[data-testid="stAlert"] div {
+        color: #f8fafc !important;
     }
     .main-header {
         font-family: 'Outfit', sans-serif;
@@ -160,6 +186,48 @@ for message in st.session_state.messages:
     avatar = "✈️" if message["role"] == "user" else "🤖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
+        
+        # Render technical execution trace if available
+        if message["role"] == "assistant" and "trace" in message and message["trace"]:
+            trace = message["trace"]
+            with st.expander("🔍 Technical Execution Trace", expanded=False):
+                # 1. Model Info
+                model_info = trace.get("model_info", {})
+                st.markdown(f"**LLM Provider:** `{model_info.get('provider', 'N/A')}` | **LLM Key Source:** `{model_info.get('key_source', 'N/A')}`")
+                
+                # 2. Token Usage
+                token_usage = trace.get("token_usage", {})
+                st.markdown("**Token Usage Summary:**")
+                col_t1, col_t2, col_t3 = st.columns(3)
+                with col_t1:
+                    st.metric("Prompt (Input)", f"{token_usage.get('input_tokens', 0)}")
+                with col_t2:
+                    st.metric("Completion (Output)", f"{token_usage.get('output_tokens', 0)}")
+                with col_t3:
+                    st.metric("Total Tokens", f"{token_usage.get('total_tokens', 0)}")
+                
+                # 3. Tool Calls
+                tool_calls = trace.get("tool_calls", [])
+                if tool_calls:
+                    st.markdown("**Tool Execution Timeline:**")
+                    for idx, tool_call in enumerate(tool_calls):
+                        tool_name = tool_call.get("name", "Unknown Tool")
+                        tool_args = tool_call.get("args", {})
+                        tool_output = tool_call.get("output", "")
+                        tool_key_src = tool_call.get("key_source", "Host Key (.env)")
+                        
+                        with st.container(border=True):
+                            st.markdown(f"**Step {idx+1}:** Called `{tool_name}` (using `{tool_key_src}`)")
+                            st.code(f"Inputs: {json.dumps(tool_args, indent=2)}", language="json")
+                            st.markdown("**Output / Result:**")
+                            if len(tool_output) > 500:
+                                st.text(tool_output[:500] + "\n... (truncated for layout) ...")
+                                with st.expander("Show Full Tool Output", expanded=False):
+                                    st.text(tool_output)
+                            else:
+                                st.text(tool_output)
+                else:
+                    st.markdown("ℹ️ *No tools were called for this response.*")
 
 # Trip parameters for contextual planning
 col1, col2, col3 = st.columns([1, 1, 2])
@@ -210,8 +278,48 @@ if prompt := st.chat_input("E.g., Plan a 5-day honeymoon in the Maldives"):
                     response.raise_for_status()
                     resp_json = response.json()
                     answer = resp_json.get("answer", "I prepared a plan for you, but could not retrieve the text.")
+                    trace = resp_json.get("trace", {})
                     st.markdown(answer)
-                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    
+                    # Render trace for the live response
+                    if trace:
+                        with st.expander("🔍 Technical Execution Trace", expanded=False):
+                            model_info = trace.get("model_info", {})
+                            st.markdown(f"**LLM Provider:** `{model_info.get('provider', 'N/A')}` | **LLM Key Source:** `{model_info.get('key_source', 'N/A')}`")
+                            
+                            token_usage = trace.get("token_usage", {})
+                            st.markdown("**Token Usage Summary:**")
+                            col_t1, col_t2, col_t3 = st.columns(3)
+                            with col_t1:
+                                st.metric("Prompt (Input)", f"{token_usage.get('input_tokens', 0)}")
+                            with col_t2:
+                                st.metric("Completion (Output)", f"{token_usage.get('output_tokens', 0)}")
+                            with col_t3:
+                                st.metric("Total Tokens", f"{token_usage.get('total_tokens', 0)}")
+                            
+                            tool_calls = trace.get("tool_calls", [])
+                            if tool_calls:
+                                st.markdown("**Tool Execution Timeline:**")
+                                for idx, tool_call in enumerate(tool_calls):
+                                    tool_name = tool_call.get("name", "Unknown Tool")
+                                    tool_args = tool_call.get("args", {})
+                                    tool_output = tool_call.get("output", "")
+                                    tool_key_src = tool_call.get("key_source", "Host Key (.env)")
+                                    
+                                    with st.container(border=True):
+                                        st.markdown(f"**Step {idx+1}:** Called `{tool_name}` (using `{tool_key_src}`)")
+                                        st.code(f"Inputs: {json.dumps(tool_args, indent=2)}", language="json")
+                                        st.markdown("**Output / Result:**")
+                                        if len(tool_output) > 500:
+                                            st.text(tool_output[:500] + "\n... (truncated for layout) ...")
+                                            with st.expander("Show Full Tool Output", expanded=False):
+                                                st.text(tool_output)
+                                        else:
+                                            st.text(tool_output)
+                            else:
+                                st.markdown("ℹ️ *No tools were called for this response.*")
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": answer, "trace": trace})
 
             except Exception as e:
                 st.error(f"Failed to reach the travel assistant: {str(e)}")

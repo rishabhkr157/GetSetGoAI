@@ -17,7 +17,7 @@ class WeatherInfoTool():
         
         @tool
         async def get_current_weather(city: str, config: RunnableConfig) -> str:
-            """Get current weather conditions for a city."""
+            """Get current weather conditions for a city. You MUST call this or get_weather_forecast for every travel planning query to provide accurate weather information. Do not guess weather data."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             user_key = api_keys.get("weather_api_key")
             
@@ -33,7 +33,7 @@ class WeatherInfoTool():
 
         @tool
         async def get_weather_forecast(city: str, config: RunnableConfig) -> str:
-            """Get a summarized 5-day weather forecast for a city."""
+            """Get a summarized 5-day weather forecast for a city. You MUST call this tool for every travel planning query to provide accurate weather forecasts. Do not guess weather conditions."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             user_key = api_keys.get("weather_api_key")
 

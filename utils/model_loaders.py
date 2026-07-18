@@ -47,7 +47,7 @@ class ModelLoader(BaseModel):
                 "model": model_name,
                 "model_provider": provider,
                 "temperature": 0.1,
-                "max_tokens": 2000,
+                "max_tokens": 4096,
             }
             if base_url:
                 kwargs["base_url"] = base_url
@@ -69,8 +69,9 @@ class ModelLoader(BaseModel):
                  return ChatGroq(
                      model=model_name, 
                      api_key=api_key,
-                     temperature=0.0,
+                     temperature=0.1,
                      max_retries=5,
+                     max_tokens=4096,
                  )
             
             # For other providers via init_chat_model

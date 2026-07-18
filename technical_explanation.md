@@ -29,6 +29,10 @@ The agent has access to a specialized suite of tools, each designed to handle a 
 ### **Reliable Tool Calling**
 We use `parallel_tool_calls=False` when binding tools to the LLM (especially for Llama-based models like Groq). This forces the agent to reason about each tool call sequentially, significantly reducing "hallucinations" and malformed JSON errors.
 
+### **Tool-Call Validation Guard & Workflow Sequence**
+To ensure the LLM does not rely on its outdated internal training data, the prompt specifies a mandatory 6-step sequence (Weather -> Attractions -> Hotels -> Restaurants -> Budget -> Respond). 
+Additionally, we implement a **Tool-Call Validation Guard** in `Agent/agentic_workflow.py`. If the model attempts to skip tool calls and write a final answer on its first turn, the guard intercepts the flow, injects a nudge instruction reminding the model of its mandatory tools, and re-invokes the LLM to guarantee proper real-time data collection.
+
 ---
 
 ## 🛡️ 3. State Management & Resilience
@@ -51,3 +55,15 @@ The system is split into two microservices:
 2.  **Frontend (Streamlit)**: Provides a modern, responsive UI and handles user-provided API keys (BYOK).
 
 Communication between services is optimized for Render's infrastructure, using automated health checks and public DNS resolution to ensure 100% uptime with automatic "server wake-up" logic.
+
+---
+
+## 🔍 5. Execution Tracing & Diagnostics
+
+To make the agent's operations transparent and facilitate debugging, the system features robust observability layers:
+
+1.  **Execution Trace Extraction (`evaluation/tracer.py`)**: After the graph completes its run, the backend parses the transaction history. It tracks token usage metrics (prompt/input tokens and completion/output tokens) from the model's metadata.
+2.  **API Key Attribution**: The tracer dynamically checks the source of the API keys used for both the LLM and the individual tool executions. It distinguishes between the default environment keys (`Host Key (.env)`) and keys supplied by the user (`User Key (BYOK)`).
+3.  **Step-by-Step Timeline**: The trace details every tool execution, mapping the exact inputs, outputs, and status.
+4.  **UI Visualization**: The Streamlit interface displays this trace inside a dedicated, collapsible **Technical Execution Trace** expander below each response, offering real-time performance metrics and deep diagnostics.
+5.  **Enterprise Observability (LangSmith)**: Built-in support for LangSmith. By setting the environment variables `LANGCHAIN_TRACING_V2=true` and your `LANGCHAIN_API_KEY`, the agent automatically routes full traces, latency reports, and internal prompt nodes to your LangSmith project dashboard for diagnostic tracking and evaluation datasets.

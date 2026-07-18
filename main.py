@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse, Response
 from tools.place_search_tool import LocationInfoTool
 from Agent.agentic_workflow import GraphBuilder
 from exception.exceptions import ProviderAPIError
+from evaluation.tracer import extract_execution_trace
 
 load_dotenv()
 
@@ -132,8 +133,12 @@ async def query_travel_agent(query: QueryRequest):
         # Remove any lingering machine-readable JSON blocks
         final_output = re.sub(r"```json\s*[\s\S]*?```", "", final_output, flags=re.DOTALL).strip()
         
-        # Provide both a cleaned `answer` for UI and a `raw` field for debugging
-        return {"answer": final_output}
+        # Calculate execution trace metadata
+        provider = os.getenv("MODEL_PROVIDER", "google")
+        trace = extract_execution_trace(output, api_keys, provider)
+        
+        # Provide both a cleaned `answer` for UI and a `trace` field for debugging/evaluation
+        return {"answer": final_output, "trace": trace}
 
     except Exception as e:
         if "402" in str(e):

@@ -20,6 +20,12 @@ services:
         sync: false
       - key: EXCHANGE_API_KEY
         sync: false
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_API_KEY
+        sync: false
+      - key: LANGCHAIN_PROJECT
+        value: getsetgo-travel-agent
 
   # --- Frontend: Streamlit Service ---
   - type: web
@@ -31,4 +37,7 @@ services:
     startCommand: .venv/bin/python -m streamlit run streamlit_app.py --server.port 10000 --server.address 0.0.0.0
     envVars:
       - key: BACKEND_URL
-        value: https://getsetgo-backend-v4-km3t.onrender.com
+        fromService:
+          type: web
+          name: getsetgo-backend-v4
+          property: host

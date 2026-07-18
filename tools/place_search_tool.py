@@ -23,7 +23,7 @@ class LocationInfoTool:
         
         @tool
         async def search_attractions(place: str, config: RunnableConfig) -> str:
-            """Search for top attractions in and around a given place."""
+            """Search for top tourist attractions and landmarks in a given place. You MUST call this tool for every travel planning query to get real, up-to-date attraction data. Do not rely on training data for attractions."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             serp_key = api_keys.get("serp_api_key")
             tavily_key = api_keys.get("tavily_api_key")
@@ -36,7 +36,7 @@ class LocationInfoTool:
             
         @tool
         async def search_restaurants(place: str, config: RunnableConfig) -> str:
-            """Search for top restaurants in and around a given place."""
+            """Search for top restaurants and dining options in a given place. You MUST call this tool to get real restaurant recommendations with prices. Do not guess restaurant names."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             serp_key = api_keys.get("serp_api_key")
             tavily_key = api_keys.get("tavily_api_key")
@@ -49,7 +49,7 @@ class LocationInfoTool:
             
         @tool
         async def search_hotels(place: str, config: RunnableConfig) -> str:
-            """Search for top hotels in and around a given place."""
+            """Search for top hotels and accommodation options in a given place. You MUST call this tool to get real hotel data with prices and booking links. Do not guess hotel names or prices."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             serp_key = api_keys.get("serp_api_key")
             tavily_key = api_keys.get("tavily_api_key")
@@ -62,7 +62,7 @@ class LocationInfoTool:
             
         @tool
         async def search_activities(place: str, config: RunnableConfig) -> str:
-            """Search for top activities in and around a given place."""
+            """Search for top activities, tours, and things to do in a given place. Call this tool to find unique experiences and activities for travelers."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             serp_key = api_keys.get("serp_api_key")
             tavily_key = api_keys.get("tavily_api_key")
@@ -75,7 +75,7 @@ class LocationInfoTool:
             
         @tool
         async def search_transportation(place: str, config: RunnableConfig) -> str:
-            """Search for transportation options in and around a given place."""
+            """Search for transportation options including flights, trains, buses, and local transit in a given place. Call this to provide logistics and travel information."""
             api_keys = config.get("configurable", {}).get("api_keys", {})
             serp_key = api_keys.get("serp_api_key")
             tavily_key = api_keys.get("tavily_api_key")

@@ -6,7 +6,7 @@ from tools.arithematic_operations_tool import ArithematicOperationsTool
 from tools.expense_calculator_tool import CalculatorTool
 from langgraph.graph import StateGraph, MessagesState, START, END
 from typing import Any, Dict, Optional, TypedDict
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 from prompt_library.prompt import SYSTEM_PROMPT
@@ -97,6 +97,21 @@ class GraphBuilder():
 
             # Invoke LLM asynchronously
             response = await current_llm.ainvoke(messages)
+            
+            # --- TOOL-CALL VALIDATION GUARD ---
+            # If this is the first user turn and the model skipped tools,
+            # nudge it to call tools before answering
+            tool_calls = getattr(response, "tool_calls", [])
+            if not tool_calls and len(input_messages) <= 3:
+                logger.info("Tool-call guard triggered: model skipped tools on first turn, re-prompting")
+                nudge_msg = HumanMessage(
+                    content="You must use your tools before answering. "
+                    "Start by calling search_attractions and get_weather_forecast for the destination. "
+                    "Do NOT write a final answer yet — call the tools first."
+                )
+                messages.append(response)
+                messages.append(nudge_msg)
+                response = await current_llm.ainvoke(messages)
             
             # Robust content extraction
             content = getattr(response, 'content', "")

@@ -35,3 +35,9 @@ docker-compose.yml
 
 # Personal docs
 ELITE_INTERVIEW_GUIDE.md
+
+# Streamlit secrets and caches
+.streamlit/secrets.toml
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store

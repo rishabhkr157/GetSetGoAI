@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=render)](https://getsetgo-frontend-v4-km3t.onrender.com/)
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/RishabKr15/GetSetGoAI)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/rishabhkr157/GetSetGoAI)
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![LangGraph](https://img.shields.io/badge/Orchestrator-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
@@ -13,7 +13,7 @@ Experience the future of travel planning. **GetSetGoAI** is a premium, multi-age
 ![alt text](<Screenshot (795).png>)
 
 ## 🔗 Repository
-Find the latest source code and contribute here: [RishabKr15/GetSetGoAI](https://github.com/RishabKr15/GetSetGoAI)
+Find the latest source code and contribute here: [rishabhkr157/GetSetGoAI](https://github.com/rishabhkr157/GetSetGoAI)
 
 ## 🌟 Key Features
 
@@ -28,6 +28,9 @@ Find the latest source code and contribute here: [RishabKr15/GetSetGoAI](https:/
 - **Live Logistics**: Integration with weather services and location data for precise planning.
 - **Premium PDF Export**: Generate a high-quality PDF itinerary with one click.
 - **Persistence**: Remembers your conversation history across sessions using a robust threading system.
+- **Comprehensive Run Tracing**: Integrated execution tracer showing token counts (prompt, completion, total), LLM provider info, and step-by-step API key source attribution (BYOK vs Host).
+- **Sequential Tool Calling Guard**: Mandatory tool execution validation sequence (Weather -> Attractions -> Hotels -> Restaurants -> Budget) with a fallback guard ensuring the model never answers using stale training data.
+- **Enterprise-Grade Observability (LangSmith)**: Out-of-the-box integration with LangSmith. Simply toggle the standard environment variables to stream full run-graphs, prompts, and latencies for production-grade evaluation and debugging.
 
 ---
 
@@ -72,6 +75,7 @@ GetSetGoAI follows a modular, tool-centric design:
 - **Tools (`tools/`)**: Specialized, non-blocking modules for Weather, Places, Currency, and Calculations.
 - **UI (`streamlit_app.py`)**: A modern, glassmorphic chat interface for high-end user experience.
 - **API (`main.py`)**: A high-performance, non-blocking RESTful gateway.
+- **Tracer (`evaluation/tracer.py`)**: An execution tracing and diagnostic utility that calculates token metrics and attributes API key usage dynamically.
 
 For a deeper dive into how the agent thinks and the underlying LangGraph architecture, see the [Technical Explanation Guide](technical_explanation.md).
 
@@ -93,4 +97,4 @@ pytest -v
 
 ## 📜 License
 Developed for elite travelers. All rights reserved. 
-© 2026 [Rishabh Kumar](https://github.com/RishabKr15)
+© 2026 [Rishabh Kumar](https://github.com/rishabhkr157)
